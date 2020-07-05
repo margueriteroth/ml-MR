@@ -48,7 +48,7 @@ const Title = styled.h1`
     }
 `;
 
-const Description = styled.p`
+const Description = styled.div`
     font-family: "Work Sans";
     font-size: 24px;
     max-width: 900px;
@@ -105,7 +105,7 @@ const MasonryItem = styled.div`
 
 `;
 
-const Paragraph = styled.p`
+const ParagraphContainer = styled.div`
     font-family: "Work Sans";
     font-size: 22px;
     max-width: 900px;
@@ -134,48 +134,43 @@ const About = ({ data }) => {
     const prismicContent = data.allPrismicAbout.edges[0]
     if (!prismicContent) return null
 
-    console.log(prismicContent)
+    const content = prismicContent.node.data.body.map((slice, index) => {
+        // Render the right markup for the given slice type
+        let slice_type = slice.slice_type
 
-    // const content = prismicContent.node.data.body.map((slice, index) => {
-    //     // Render the right markup for the given slice type
-    //     let slice_type = slice.slice_type
+        // Text Slice
+        if (slice_type === 'paragraph') {
+            let items = slice.items.map(item => htmlToReactParser.parse(item.text.html))
 
-    //     // Text Slice
-    //     if (slice_type === 'paragraph') {
-    //         let items = slice.items.map(item => htmlToReactParser.parse(item.text.html))
+            return (
+                <ParagraphContainer key={`slice-${index}`}>
+                    <Fragment>
+                        {items}
+                    </Fragment>
+                </ParagraphContainer>
+            )
+        }
 
-    //         return (
-    //             <Paragraph>
-    //                 <Fragment key={`slice-${index}`}>
-    //                     {items}
-    //                 </Fragment>
-    //             </Paragraph>
-    //         )
-    //     }
+        // Image Gallery Slice
+        if (slice_type === 'gallery') {
+            return (
+                <MasonryWrapper>
+                    <Masonry key={index}>
+                        {slice.items.map((item, i) => (
+                            <MasonryItem key={i}>
+                                <AboutImg
+                                    src={item.image.url}
+                                    alt={item.image.alt}
+                                />
+                            </MasonryItem>
+                        ))}
+                    </Masonry>
+                </MasonryWrapper>
+            )
+        }
 
-    //     // Image Gallery Slice
-    //     if (slice_type === 'gallery') {
-
-    //         return (
-
-    //             <MasonryWrapper>
-    //                 <Masonry key={index}>
-    //                     {slice.items.map((item, i) => (
-    //                         <MasonryItem>
-    //                             <AboutImg
-    //                                 key={i}
-    //                                 src={item.image.url}
-    //                                 alt={item.image.alt}
-    //                             />
-    //                         </MasonryItem>
-    //                     ))}
-    //                 </Masonry>
-    //             </MasonryWrapper>
-    //         )
-    //     }
-
-    //     return null
-    // })
+        return null
+    })
 
     return (
         <Layout>
@@ -191,7 +186,7 @@ const About = ({ data }) => {
                 </Description>
             </Header>
 
-            {/* {content} */}
+            {content}
         </Layout>
     )
 }
